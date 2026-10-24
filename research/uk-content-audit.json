@@ -1,0 +1,56 @@
+{
+  "pages": 112,
+  "coverage_by_nation": {
+    "England": 62,
+    "Scotland": 8,
+    "Wales": 7,
+    "Northern Ireland": 6
+  },
+  "courses": 6,
+  "guides": 6,
+  "city_authored_copy": {
+    "unique_introductions": 83,
+    "unique_specific_questions": 83,
+    "unique_practice_paragraphs": 83,
+    "maximum_name_normalized_five_word_jaccard": 0.019,
+    "closest_pairs": [
+      [
+        0.01904761904761905,
+        "Bradford",
+        "Inverness"
+      ],
+      [
+        0.018691588785046728,
+        "Chester",
+        "Wrexham"
+      ],
+      [
+        0.014925373134328358,
+        "Bradford",
+        "St Albans"
+      ],
+      [
+        0.009950248756218905,
+        "Salisbury",
+        "Dunfermline"
+      ],
+      [
+        0.00980392156862745,
+        "Dundee",
+        "Cardiff"
+      ]
+    ],
+    "note": "This tests authored blocks. Shared navigation, accurate fees, national clock guidance and focus-group instructions intentionally repeat."
+  },
+  "schema_counts": {
+    "EducationalOrganization": 111,
+    "WebPage": 111,
+    "BreadcrumbList": 111,
+    "Article": 6,
+    "Course": 6,
+    "FAQPage": 99,
+    "Service": 92
+  },
+  "errors": [],
+  "visual_review": "No connected browser available. Responsive CSS breakpoints are implemented; screenshot comparisons were not performed."
+}
