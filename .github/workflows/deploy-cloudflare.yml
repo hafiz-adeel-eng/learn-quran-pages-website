@@ -6,6 +6,7 @@ on:
     paths:
       - 'public/**'
       - 'wrangler.jsonc'
+      - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
 
 permissions:
