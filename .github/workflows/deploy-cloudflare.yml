@@ -1,0 +1,64 @@
+name: Deploy QuranlyHub to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'wrangler.jsonc'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: cloudflare-pages-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check credentials and create the Pages project if needed
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: python
+        run: |
+          import json, os, re, urllib.request, urllib.error
+          token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
+          account = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
+          if not token or not account:
+              raise SystemExit('Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in repository Settings > Secrets and variables > Actions.')
+          if not re.fullmatch(r'[0-9a-fA-F]{32}', account):
+              raise SystemExit('CLOUDFLARE_ACCOUNT_ID must be the 32-character Cloudflare Account ID.')
+          base = 'https://api.cloudflare.com/client/v4/accounts/' + account + '/pages/projects'
+          headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
+          def request(url, method='GET', body=None):
+              data = json.dumps(body).encode() if body is not None else None
+              req = urllib.request.Request(url, data=data, headers=headers, method=method)
+              with urllib.request.urlopen(req, timeout=45) as response:
+                  result = json.load(response)
+              if not result.get('success'):
+                  raise SystemExit('Cloudflare rejected the request: ' + str(result.get('errors', [])))
+              return result
+          try:
+              project = request(base + '/learnquran')
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise SystemExit('Cloudflare account access failed (HTTP ' + str(error.code) + '). Check the Account ID and Pages Edit token permission.')
+              project = request(base, 'POST', {'name': 'learnquran', 'production_branch': 'main'})
+          print('Cloudflare Pages project ready: ' + project['result']['name'])
+
+      - name: Deploy website
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy public --project-name=learnquran --branch=main
