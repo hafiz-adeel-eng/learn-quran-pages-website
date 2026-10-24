@@ -1053,3 +1053,63 @@ body.page-id-280 .qh-hero-restored-columns .qh-hero-image-restored::before,
 body.page-id-280 .qh-hero-restored-columns .qh-hero-image-restored::after{content:none!important}
 @media(max-width:1024px){html{scroll-padding-top:80px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Quran Hub: modern gold CTA buttons. */
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm),
+html body a.qh-cta,
+html body .qh-drawer a.qh-drawer__cta,
+html body .qh-bar a {
+  background:linear-gradient(135deg,#F7D66A 0%,#EAB308 64%,#DDA50A 100%)!important;
+  background-color:#EAB308!important;
+  color:#173B35!important;
+  border:1px solid rgba(197,143,7,.65)!important;
+  border-radius:12px!important;
+  min-height:48px;
+  padding:13px 22px!important;
+  font-family:Inter,Arial,sans-serif!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  line-height:1.4!important;
+  letter-spacing:0!important;
+  text-align:center;
+  text-decoration:none!important;
+  box-shadow:0 4px 12px rgba(125,88,0,.15),inset 0 1px 0 rgba(255,255,255,.45)!important;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease!important;
+}
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm):visited,
+html body a.qh-cta:visited,
+html body .qh-drawer a.qh-drawer__cta:visited,
+html body .qh-bar a:visited {color:#173B35!important}
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm) .elementor-button-icon,
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm) .elementor-button-text {color:inherit!important}
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm) .elementor-button-icon svg {fill:currentColor!important}
+html body a.qh-cta {min-height:44px;padding:11px 18px!important;font-size:13px!important}
+html body .qh-bar a {height:48px;padding:10px 12px!important;font-size:13px!important}
+@media(hover:hover) and (pointer:fine) {
+  html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm):hover,
+  html body a.qh-cta:hover,
+  html body .qh-drawer a.qh-drawer__cta:hover,
+  html body .qh-bar a:hover {
+    background:linear-gradient(135deg,#F9DC7F 0%,#EDBD23 64%,#E3AF12 100%)!important;
+    color:#173B35!important;
+    transform:translateY(-2px);
+    box-shadow:0 7px 18px rgba(125,88,0,.23),inset 0 1px 0 rgba(255,255,255,.55)!important;
+  }
+}
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm):focus-visible,
+html body a.qh-cta:focus-visible,
+html body .qh-drawer a.qh-drawer__cta:focus-visible,
+html body .qh-bar a:focus-visible {outline:3px solid #173B35!important;outline-offset:3px}
+html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm):active,
+html body a.qh-cta:active,
+html body .qh-drawer a.qh-drawer__cta:active,
+html body .qh-bar a:active {transform:translateY(0) scale(.99);box-shadow:0 2px 6px rgba(125,88,0,.16)!important}
+@media(max-width:767px) {
+  html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm) {padding:13px 18px!important;font-size:14px!important}
+}
+@media(prefers-reduced-motion:reduce) {
+  html body #main .elementor-280 a.elementor-button:not(.elementor-size-sm),
+  html body a.qh-cta,
+  html body .qh-drawer a.qh-drawer__cta,
+  html body .qh-bar a {transition:none!important;transform:none!important}
+}
