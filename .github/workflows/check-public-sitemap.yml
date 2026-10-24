@@ -13,33 +13,41 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Fetch sitemap and robots from an independent server
+      - name: Compare Quran Hub and Daily Vertex sitemap responses
         shell: python
         run: |
-          import json, urllib.request, urllib.error, xml.etree.ElementTree as ET
-          origin = 'https://learnquran-86k.pages.dev'
+          import json, re, urllib.request, urllib.error, urllib.parse, xml.etree.ElementTree as ET
+          sites = ['https://learnquran-86k.pages.dev', 'https://dailyvertex.pages.dev']
           agents = {'normal': 'Mozilla/5.0 (compatible; sitemap-diagnostic)', 'googlebot-user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
           failures = []
-          for label, agent in agents.items():
-              for path in ['/sitemap.xml', '/robots.txt']:
-                  request = urllib.request.Request(origin + path, headers={'User-Agent': agent})
-                  try:
-                      with urllib.request.urlopen(request, timeout=30) as response:
-                          body = response.read()
-                          info = {'agent': label, 'path': path, 'status': response.status, 'final_url': response.url, 'content_type': response.headers.get('Content-Type'), 'x_robots_tag': response.headers.get('X-Robots-Tag'), 'cf_mitigated': response.headers.get('cf-mitigated'), 'bytes': len(body)}
-                      if path.endswith('.xml'):
-                          root = ET.fromstring(body)
-                          urls = [n.text for n in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
-                          info['xml_root'] = root.tag
-                          info['urls'] = urls
-                          if root.tag != '{http://www.sitemaps.org/schemas/sitemap/0.9}urlset' or urls != [origin + '/']:
-                              failures.append('Unexpected sitemap structure or URL')
-                      else:
-                          info['robots'] = body.decode('utf-8-sig')
-                      print(json.dumps(info))
-                  except Exception as error:
-                      print(json.dumps({'agent': label, 'path': path, 'error': str(error)}))
-                      failures.append(label + ' ' + path)
+          for origin in sites:
+              for label, agent in agents.items():
+                  for path in ['/sitemap.xml', '/robots.txt', '/']:
+                      request = urllib.request.Request(origin + path, headers={'User-Agent': agent})
+                      try:
+                          with urllib.request.urlopen(request, timeout=30) as response:
+                              body = response.read()
+                              info = {'site': origin, 'agent': label, 'path': path, 'status': response.status, 'final_url': response.url, 'content_type': response.headers.get('Content-Type'), 'x_robots_tag': response.headers.get('X-Robots-Tag'), 'cf_mitigated': response.headers.get('cf-mitigated'), 'bytes': len(body)}
+                          if path.endswith('.xml'):
+                              root = ET.fromstring(body)
+                              urls = [n.text for n in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+                              info['xml_root'] = root.tag
+                              info['url_count'] = len(urls)
+                              info['homepage_listed'] = origin + '/' in urls
+                              if root.tag != '{http://www.sitemaps.org/schemas/sitemap/0.9}urlset' or not urls:
+                                  failures.append(origin + ': unexpected sitemap structure')
+                              if any(urllib.parse.urlparse(url).netloc != urllib.parse.urlparse(origin).netloc for url in urls):
+                                  failures.append(origin + ': sitemap lists another host')
+                          elif path == '/robots.txt':
+                              info['robots'] = body.decode('utf-8-sig')
+                          else:
+                              page = body.decode('utf-8-sig')
+                              info['robots_meta'] = re.findall(r'<meta[^>]*name=[\"\x27]robots[\"\x27][^>]*>', page, re.I)
+                              info['canonical'] = re.findall(r'<link[^>]*rel=[\"\x27]canonical[\"\x27][^>]*>', page, re.I)
+                          print(json.dumps(info))
+                      except Exception as error:
+                          print(json.dumps({'site': origin, 'agent': label, 'path': path, 'error': str(error)}))
+                          failures.append(origin + ' ' + label + ' ' + path)
           if failures:
               raise SystemExit('Fetch checks failed: ' + ', '.join(failures))
-          print('PUBLIC_SITEMAP_CHECK_PASSED. A Googlebot user-agent check does not establish access from actual Google crawler IP addresses.')
+          print('PUBLIC_SITEMAP_CHECK_PASSED. This does not establish access from actual Google crawler IP addresses.')
