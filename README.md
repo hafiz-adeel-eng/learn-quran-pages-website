@@ -1,6 +1,6 @@
-# QuranlyHub
+# Quran Hub
 
-QuranlyHub website with a medium teal palette (#16847A), six courses, separate cacheable CSS, responsive navigation, pricing, FAQ accordion and the original imagery. The Alim & Aalimah course has been removed.
+Quran Hub website with a medium teal palette (#16847A), six courses, separate cacheable CSS, responsive navigation, pricing, FAQ accordion and the original imagery. The Alim & Aalimah course has been removed.
 
 ## Automatic deployment with Cloudflare Pages
 
@@ -22,6 +22,6 @@ The expected address is `https://learnquran.pages.dev` if Cloudflare accepts tha
 - `public/original-interactions.js`: original menu and reveal behavior.
 - `public/interactions.js`: standalone FAQ, keyboard and anchor support.
 
-Open `public/index.html` in a browser to preview. Original public images and fonts require internet access. Other page, login, contact and WhatsApp links retain their original QuranlyHub destinations. No changes were made to quranlyhub.com.
+Open `public/index.html` in a browser to preview. Original public images and fonts require internet access. Other page, login, contact and WhatsApp links retain their original Quran Hub destinations. No changes were made to quranlyhub.com.
 
 JavaScript syntax and content checks passed. Screenshot comparison at desktop, tablet and mobile sizes remains unverified because browser tooling was unavailable.

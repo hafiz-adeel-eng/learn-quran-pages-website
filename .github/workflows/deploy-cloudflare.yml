@@ -1,4 +1,4 @@
-name: Deploy QuranlyHub to Cloudflare Pages
+name: Deploy Quran Hub to Cloudflare Pages
 
 on:
   push:
