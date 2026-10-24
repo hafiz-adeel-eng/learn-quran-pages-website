@@ -1,0 +1,11 @@
+(() => {
+  'use strict';
+  document.documentElement.classList.remove('no-js');
+  document.querySelectorAll('.e-con.e-parent').forEach(el=>el.classList.add('e-lazyloaded'));
+  const titles=[...document.querySelectorAll('.elementor-accordion .elementor-tab-title')];
+  function expand(title,open){title.classList.toggle('elementor-active',open);title.setAttribute('aria-expanded',String(open));const panel=document.getElementById(title.getAttribute('aria-controls'));if(panel){panel.classList.toggle('elementor-active',open);panel.style.display=open?'block':'none';panel.hidden=!open}}
+  titles.forEach(title=>{title.tabIndex=0;expand(title,false);title.addEventListener('click',()=>{const open=title.getAttribute('aria-expanded')!=='true';titles.forEach(other=>expand(other,other===title&&open))});title.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();title.click()}if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();titles[(titles.indexOf(title)+(event.key==='ArrowDown'?1:titles.length-1))%titles.length].focus()}})});
+  document.querySelectorAll('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{const hash=link.getAttribute('href');if(hash.length<2)return;const target=document.getElementById(hash.slice(1));if(!target)return;event.preventDefault();target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});history.replaceState(null,'',hash)}));
+  const drawer=document.getElementById('qh-drawer');const opener=document.querySelector('[data-qh-open]');
+  if(drawer){drawer.addEventListener('keydown',event=>{if(event.key!=='Tab'||drawer.getAttribute('data-open')!=='true')return;const elements=[...drawer.querySelectorAll('a,button,[tabindex="0"]')].filter(el=>el.getClientRects().length);const first=elements[0],last=elements.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}});drawer.querySelectorAll('[data-qh-close]').forEach(el=>el.addEventListener('click',()=>opener?.focus()));document.addEventListener('keydown',event=>{if(event.key==='Escape'&&drawer.getAttribute('data-open')==='true')opener?.focus()})}
+})();
