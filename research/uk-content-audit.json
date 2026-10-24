@@ -1,4 +1,6 @@
 {
+  "word_limit": 2000,
+  "maximum_main_content_words": 1407,
   "pages": 112,
   "coverage_by_nation": {
     "England": 62,
@@ -12,32 +14,32 @@
     "unique_introductions": 83,
     "unique_specific_questions": 83,
     "unique_practice_paragraphs": 83,
-    "maximum_name_normalized_five_word_jaccard": 0.019,
+    "maximum_name_normalized_five_word_jaccard": 0.0128,
     "closest_pairs": [
       [
-        0.01904761904761905,
+        0.012779552715654952,
         "Bradford",
         "Inverness"
       ],
       [
-        0.018691588785046728,
+        0.012422360248447204,
         "Chester",
         "Wrexham"
       ],
       [
-        0.014925373134328358,
+        0.009933774834437087,
         "Bradford",
         "St Albans"
       ],
       [
-        0.009950248756218905,
-        "Salisbury",
-        "Dunfermline"
-      ],
-      [
-        0.00980392156862745,
+        0.006600660066006601,
         "Dundee",
         "Cardiff"
+      ],
+      [
+        0.006514657980456026,
+        "Salisbury",
+        "Dunfermline"
       ]
     ],
     "note": "This tests authored blocks. Shared navigation, accurate fees, national clock guidance and focus-group instructions intentionally repeat."

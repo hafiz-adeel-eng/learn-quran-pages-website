@@ -7,3 +7,5 @@ Run `python tools/build_uk.py` then `python tools/audit_uk.py`. The build writes
 The complete site has 112 canonical pages: homepage, 83 city/town pages, UK hub, four nation hubs, four audience pages, course index, six course pages, blog index, six guides, and five support pages. These are 112 real routes, not a claim that 250 pages have been authored.
 
 See `uk-keywords-and-sources.md` for intent clusters, sampled competitors, questions and research limitations. `uk-build-validation.json` and `uk-content-audit.json` record local checks. Post-deploy `tools/check_live_uk.py` checks every published route against the generated sitemap.
+
+Expanded explanations are in `content/uk_expansion.py`; the location table also includes individually authored review guidance. H2 phrases follow the supplied UK keyword clusters. The audit counts visible main content without shared navigation, sidebar or footer and fails if a page exceeds 2,000 words. `current-word-counts.json` records the actual lengths; 1,900 words is not treated as a compulsory minimum.

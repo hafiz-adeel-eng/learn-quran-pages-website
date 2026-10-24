@@ -1,0 +1,450 @@
+[
+  {
+    "path": "/",
+    "main_content_words": 1185
+  },
+  {
+    "path": "/about/",
+    "main_content_words": 483
+  },
+  {
+    "path": "/blog/",
+    "main_content_words": 332
+  },
+  {
+    "path": "/blog/best-online-quran-classes-uk/",
+    "main_content_words": 829
+  },
+  {
+    "path": "/blog/first-online-quran-trial/",
+    "main_content_words": 705
+  },
+  {
+    "path": "/blog/hifz-revision-around-school/",
+    "main_content_words": 653
+  },
+  {
+    "path": "/blog/quran-practice-for-children/",
+    "main_content_words": 684
+  },
+  {
+    "path": "/blog/safe-online-quran-tutor-questions/",
+    "main_content_words": 696
+  },
+  {
+    "path": "/blog/uk-quran-class-times-gmt-bst/",
+    "main_content_words": 708
+  },
+  {
+    "path": "/contact/",
+    "main_content_words": 242
+  },
+  {
+    "path": "/courses/",
+    "main_content_words": 435
+  },
+  {
+    "path": "/courses/advanced-tajweed/",
+    "main_content_words": 769
+  },
+  {
+    "path": "/courses/noorani-qaida/",
+    "main_content_words": 796
+  },
+  {
+    "path": "/courses/quran-memorization-hifz/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/courses/quran-reading-tajweed/",
+    "main_content_words": 783
+  },
+  {
+    "path": "/courses/quranic-arabic/",
+    "main_content_words": 767
+  },
+  {
+    "path": "/courses/tafseer/",
+    "main_content_words": 773
+  },
+  {
+    "path": "/female-quran-teachers-uk/",
+    "main_content_words": 910
+  },
+  {
+    "path": "/locations/uk/",
+    "main_content_words": 1407
+  },
+  {
+    "path": "/locations/uk/aberdeen/",
+    "main_content_words": 767
+  },
+  {
+    "path": "/locations/uk/armagh/",
+    "main_content_words": 778
+  },
+  {
+    "path": "/locations/uk/bangor-northern-ireland/",
+    "main_content_words": 792
+  },
+  {
+    "path": "/locations/uk/bangor-wales/",
+    "main_content_words": 777
+  },
+  {
+    "path": "/locations/uk/bath/",
+    "main_content_words": 767
+  },
+  {
+    "path": "/locations/uk/belfast/",
+    "main_content_words": 816
+  },
+  {
+    "path": "/locations/uk/birmingham/",
+    "main_content_words": 754
+  },
+  {
+    "path": "/locations/uk/blackburn/",
+    "main_content_words": 767
+  },
+  {
+    "path": "/locations/uk/bolton/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/bradford/",
+    "main_content_words": 771
+  },
+  {
+    "path": "/locations/uk/brighton-hove/",
+    "main_content_words": 784
+  },
+  {
+    "path": "/locations/uk/bristol/",
+    "main_content_words": 766
+  },
+  {
+    "path": "/locations/uk/cambridge/",
+    "main_content_words": 774
+  },
+  {
+    "path": "/locations/uk/canterbury/",
+    "main_content_words": 771
+  },
+  {
+    "path": "/locations/uk/cardiff/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/carlisle/",
+    "main_content_words": 773
+  },
+  {
+    "path": "/locations/uk/chelmsford/",
+    "main_content_words": 780
+  },
+  {
+    "path": "/locations/uk/chester/",
+    "main_content_words": 773
+  },
+  {
+    "path": "/locations/uk/chichester/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/colchester/",
+    "main_content_words": 777
+  },
+  {
+    "path": "/locations/uk/coventry/",
+    "main_content_words": 768
+  },
+  {
+    "path": "/locations/uk/derby/",
+    "main_content_words": 774
+  },
+  {
+    "path": "/locations/uk/derry-londonderry/",
+    "main_content_words": 787
+  },
+  {
+    "path": "/locations/uk/dewsbury/",
+    "main_content_words": 777
+  },
+  {
+    "path": "/locations/uk/doncaster/",
+    "main_content_words": 771
+  },
+  {
+    "path": "/locations/uk/dundee/",
+    "main_content_words": 779
+  },
+  {
+    "path": "/locations/uk/dunfermline/",
+    "main_content_words": 782
+  },
+  {
+    "path": "/locations/uk/durham/",
+    "main_content_words": 773
+  },
+  {
+    "path": "/locations/uk/edinburgh/",
+    "main_content_words": 781
+  },
+  {
+    "path": "/locations/uk/ely/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/england/",
+    "main_content_words": 645
+  },
+  {
+    "path": "/locations/uk/exeter/",
+    "main_content_words": 780
+  },
+  {
+    "path": "/locations/uk/glasgow/",
+    "main_content_words": 761
+  },
+  {
+    "path": "/locations/uk/gloucester/",
+    "main_content_words": 764
+  },
+  {
+    "path": "/locations/uk/hereford/",
+    "main_content_words": 780
+  },
+  {
+    "path": "/locations/uk/huddersfield/",
+    "main_content_words": 769
+  },
+  {
+    "path": "/locations/uk/inverness/",
+    "main_content_words": 783
+  },
+  {
+    "path": "/locations/uk/kingston-upon-hull/",
+    "main_content_words": 782
+  },
+  {
+    "path": "/locations/uk/lancaster/",
+    "main_content_words": 779
+  },
+  {
+    "path": "/locations/uk/leeds/",
+    "main_content_words": 777
+  },
+  {
+    "path": "/locations/uk/leicester/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/lichfield/",
+    "main_content_words": 770
+  },
+  {
+    "path": "/locations/uk/lincoln/",
+    "main_content_words": 762
+  },
+  {
+    "path": "/locations/uk/lisburn/",
+    "main_content_words": 785
+  },
+  {
+    "path": "/locations/uk/liverpool/",
+    "main_content_words": 787
+  },
+  {
+    "path": "/locations/uk/london/",
+    "main_content_words": 779
+  },
+  {
+    "path": "/locations/uk/luton/",
+    "main_content_words": 772
+  },
+  {
+    "path": "/locations/uk/manchester/",
+    "main_content_words": 754
+  },
+  {
+    "path": "/locations/uk/milton-keynes/",
+    "main_content_words": 760
+  },
+  {
+    "path": "/locations/uk/newcastle-upon-tyne/",
+    "main_content_words": 787
+  },
+  {
+    "path": "/locations/uk/newport/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/newry/",
+    "main_content_words": 802
+  },
+  {
+    "path": "/locations/uk/northern-ireland/",
+    "main_content_words": 560
+  },
+  {
+    "path": "/locations/uk/norwich/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/nottingham/",
+    "main_content_words": 778
+  },
+  {
+    "path": "/locations/uk/oldham/",
+    "main_content_words": 774
+  },
+  {
+    "path": "/locations/uk/oxford/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/perth/",
+    "main_content_words": 778
+  },
+  {
+    "path": "/locations/uk/peterborough/",
+    "main_content_words": 779
+  },
+  {
+    "path": "/locations/uk/plymouth/",
+    "main_content_words": 761
+  },
+  {
+    "path": "/locations/uk/portsmouth/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/preston/",
+    "main_content_words": 779
+  },
+  {
+    "path": "/locations/uk/ripon/",
+    "main_content_words": 778
+  },
+  {
+    "path": "/locations/uk/salford/",
+    "main_content_words": 785
+  },
+  {
+    "path": "/locations/uk/salisbury/",
+    "main_content_words": 760
+  },
+  {
+    "path": "/locations/uk/scotland/",
+    "main_content_words": 538
+  },
+  {
+    "path": "/locations/uk/sheffield/",
+    "main_content_words": 775
+  },
+  {
+    "path": "/locations/uk/slough/",
+    "main_content_words": 781
+  },
+  {
+    "path": "/locations/uk/southampton/",
+    "main_content_words": 761
+  },
+  {
+    "path": "/locations/uk/southend-on-sea/",
+    "main_content_words": 787
+  },
+  {
+    "path": "/locations/uk/st-albans/",
+    "main_content_words": 778
+  },
+  {
+    "path": "/locations/uk/st-asaph/",
+    "main_content_words": 795
+  },
+  {
+    "path": "/locations/uk/st-davids/",
+    "main_content_words": 796
+  },
+  {
+    "path": "/locations/uk/stirling/",
+    "main_content_words": 771
+  },
+  {
+    "path": "/locations/uk/stoke-on-trent/",
+    "main_content_words": 758
+  },
+  {
+    "path": "/locations/uk/sunderland/",
+    "main_content_words": 767
+  },
+  {
+    "path": "/locations/uk/swansea/",
+    "main_content_words": 800
+  },
+  {
+    "path": "/locations/uk/truro/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/wakefield/",
+    "main_content_words": 770
+  },
+  {
+    "path": "/locations/uk/wales/",
+    "main_content_words": 529
+  },
+  {
+    "path": "/locations/uk/wells/",
+    "main_content_words": 783
+  },
+  {
+    "path": "/locations/uk/westminster/",
+    "main_content_words": 758
+  },
+  {
+    "path": "/locations/uk/winchester/",
+    "main_content_words": 774
+  },
+  {
+    "path": "/locations/uk/wolverhampton/",
+    "main_content_words": 790
+  },
+  {
+    "path": "/locations/uk/worcester/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/locations/uk/wrexham/",
+    "main_content_words": 792
+  },
+  {
+    "path": "/locations/uk/york/",
+    "main_content_words": 776
+  },
+  {
+    "path": "/online-quran-classes-for-adults-uk/",
+    "main_content_words": 961
+  },
+  {
+    "path": "/online-quran-classes-for-beginners-uk/",
+    "main_content_words": 973
+  },
+  {
+    "path": "/online-quran-classes-for-kids-uk/",
+    "main_content_words": 1005
+  },
+  {
+    "path": "/pricing/",
+    "main_content_words": 515
+  },
+  {
+    "path": "/privacy-policy/",
+    "main_content_words": 242
+  },
+  {
+    "path": "/terms-of-service/",
+    "main_content_words": 257
+  }
+]

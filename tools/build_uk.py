@@ -13,6 +13,10 @@ SOURCE='https://quranlyhub.com'
 PHONE='923439486140'
 spec=importlib.util.spec_from_file_location('uk_content',ROOT/'content/uk_content.py')
 C=importlib.util.module_from_spec(spec);spec.loader.exec_module(C)
+extra_spec=importlib.util.spec_from_file_location('uk_expansion',ROOT/'content/uk_expansion.py')
+E=importlib.util.module_from_spec(extra_spec);extra_spec.loader.exec_module(E)
+for key,data in C.AUDIENCES.items():data['sections']=data['sections']+E.AUDIENCE_EXTRA[key]
+C.GUIDES=[(slug,title,description,sections+E.GUIDE_EXTRA[slug]) for slug,title,description,sections in C.GUIDES]
 LOCATIONS=list(csv.DictReader((ROOT/'content/uk_locations.tsv').open(),delimiter='\t'))
 assert len(LOCATIONS)==83 and len({x['name'] for x in LOCATIONS})==83
 
@@ -95,7 +99,7 @@ def build_city(row):
  body=section('Online Quran classes in '+name+': a suitable learning plan',para(row['brief'])+para('These are online lessons for learners in '+name+'. No physical teaching centre or home-visit service in this location is claimed. The first decision is whether the teaching format and explanation suit the individual learner.'))
  body+=section(focus[0],para(focus[4])+bullets(focus[3])+para('Use these as trial discussion points, not as a promised curriculum or an assessment result. A teacher needs to listen before recommending the next stage.'))
  body+=section('Quran classes for kids and adults: choose a suitable course',para('For the learning question discussed on this page, consider '+focus[1]+' as a conversation starter, then let the reading assessment guide the choice. Children and adults can have different needs even when studying the same text.')+'<p>'+link('/courses/'+focus[2]+'/',focus[1])+' · '+link('/online-quran-classes-for-kids-uk/','Children’s learning')+' · '+link('/online-quran-classes-for-adults-uk/','Adult learning')+' · '+link('/online-quran-classes-for-beginners-uk/','Complete beginners')+'</p>')
- body+=section('A practical next step for your lesson',para(row['practice']))
+ body+=section('A practical next step for your lesson',para(row['practice'])+para(row['review']))
  body+=section('An example note to take into the trial','<blockquote><p>Location: '+escape(name)+'. My main question is: '+escape(row['question'])+' I would like the teacher to hear a short sample and explain a suitable first practice task.</p></blockquote>'+para('This is a preparation example, not a student testimonial. Add your own reading experience and two practical UK-time windows. Explain the difficulty honestly rather than choosing a course only because it sounds more advanced.'))
  body+=section('Online Quran lesson times: GMT, BST and local planning',para(NATION_COPY[nation][1])+'<p>'+link(nation_path(nation),'Explore lessons across '+nation)+' · '+link('/blog/uk-quran-class-times-gmt-bst/','Read the GMT/BST planning guide')+'</p>')
  body+=section('Online Quran class fees and teacher availability',para('The standard published plans begin at USD 30 for eight 30-minute lessons per month; sixteen standard lessons are USD 40. Tafseer has separate pricing. These amounts are not GBP prices, and a suitable teacher, preference and recurring slot need confirmation.')+'<p>'+link('/pricing/','See the full fee table and questions to ask before payment')+' · '+link('/female-quran-teachers-uk/','Request a female teacher')+'</p>')
@@ -113,6 +117,7 @@ def build_main_hubs():
  body+=section('One-to-one online Quran classes: teachers and free trials',para('Quran Hub’s listed teaching model is live and one-to-one. Ask the academy to explain the tutor’s relevant experience and credentials, listen to a correction and let the learner try again. Parents can discuss how they will remain involved; adults can ask for a private starting assessment. Do not assume a recording, background-check or cancellation policy from another academy’s advertising.')+'<p>'+link('/blog/first-online-quran-trial/','Prepare for the first trial')+' · '+link('/blog/safe-online-quran-tutor-questions/','Questions to ask about teaching arrangements')+'</p>')
  body+=section('Lesson times in England, Scotland, Wales and Northern Ireland',para('Appointments should be confirmed in UK local time: GMT in winter and BST during the summer clock period. School calendars can differ by nation, council and school. Tell us your actual availability and confirm the next lesson when the clocks change; a suggested timetable is not a live appointment listing.')+'<p>'+link('/blog/uk-quran-class-times-gmt-bst/','Plan a clear UK-time routine')+'</p>')
  body+=section('Online Quran class fees for UK families',fees())
+ body+=''.join(section(h,para(t)) for h,t in E.UK_EXTRA)
  directory='<label class="qhuk-search-label" for="city-search">Find your UK city or town</label><input class="qhuk-city-search" id="city-search" type="search" placeholder="Search city, nation or region" aria-describedby="city-count"><p id="city-count" role="status">83 locations: 76 official UK cities and 7 additional towns.</p>'
  for nation in NATIONS:
   rows=[r for r in LOCATIONS if r['nation']==nation]
@@ -128,6 +133,7 @@ def build_main_hubs():
   body+=section('Choose a learning path','<p>'+nav_links(CORE_LINKS[1:5],'qhuk-chip-link')+'</p>'+para('A location does not determine a course level. A learner who knows some surahs from memory may still need a reading check, while someone returning after a break may retain skills that can be built on.'))
   body+=section('Cities and towns in '+nation,city_grid(rows))
   body+=section('Fees and clear lesson arrangements',fees()+'<p>'+link('/pricing/','Understand fees and attendance questions')+' · '+link('/blog/first-online-quran-trial/','Plan a useful trial')+'</p>')
+  body+=''.join(section(h,para(t)) for h,t in E.NATION_EXTRA[nation])
   write_page(path,title,'Explore Quran Hub online lessons, suitable starting courses and city enquiries across '+nation+'. UK-time appointments and tutor preferences are confirmed.',intro,body,[('/','Home'),('/locations/uk/','UK'),(path,nation)],[(f'Is there a physical Quran Hub centre in {nation}?','No physical teaching centre is claimed. The pages describe live online lessons for learners in the listed service areas.'),(f'Which time zone is used for {nation} lessons?','Use UK local time and confirm the appointment when GMT/BST changes. Your school or working calendar should be discussed separately.')])
 
 def build_audiences_and_courses():
@@ -145,6 +151,7 @@ def build_audiences_and_courses():
   body=section({'noorani-qaida':'Learn Noorani Qaida online: letters, vowels and joined reading','quran-reading-tajweed':'Online Quran classes with Tajweed: reading and pronunciation','quran-memorization-hifz':'Online Hifz classes: Quran memorisation and revision','tafseer':'Online Tafseer classes: guided Quran understanding','advanced-tajweed':'Advanced Tajweed classes: articulation and recitation rules','quranic-arabic':'Quranic Arabic classes: vocabulary and understanding'}[c['slug']],bullets(c['topics'])+para('These are areas to discuss in the trial. The order and pace should be appropriate to the learner rather than a fixed completion promise.'))
   body+=section('A structured starting sequence','<ol>'+''.join('<li>'+escape(x)+'</li>' for x in c['path'])+'</ol>')
   body+=section('A common mistake to avoid',para(c['mistake']))
+  body+=''.join(section(h,para(t)) for h,t in E.COURSE_EXTRA[c['slug']])
   body+=section('Practising between live lessons',para('Ask the tutor for a small exercise that was demonstrated in the lesson, a clear model and an explanation of what to bring back next time. Record uncertainty instead of guessing at a correction. The teacher should check whether the skill transfers to another suitable example before increasing the workload.')+'<p>'+link('/blog/quran-practice-for-children/','Supporting a child’s practice')+' · '+link('/blog/first-online-quran-trial/','Preparing a useful trial')+'</p>')
   body+=section('Private lessons for UK learners',para('Children and adults can enquire from the UK directory. Agree the teaching language, preferred teacher and a realistic GMT/BST appointment. If the learner has previous experience, bring the last book or passage studied so the assessment can build on it appropriately.')+'<p>'+link('/online-quran-classes-for-beginners-uk/','Starting as a beginner')+' · '+link('/online-quran-classes-for-adults-uk/','Adult learning')+'</p>')
   body+=section('Fees and the next learning stage',para('Tafseer uses separately published fees; the other listed courses use the standard monthly plans. The tutor should explain whether the next course is appropriate before you change focus.')+'<p>'+link('/pricing/','View the actual fee table')+' · '+link('/courses/'+c['next']+'/',COURSES[c['next']]['name'])+'</p>')
