@@ -81,7 +81,7 @@ jobs:
           # Let that finite build finish before publishing the authoritative build.
           for attempt in range(12):
               deployments = request(base + '/learnquran/deployments?per_page=10')['result']
-              active = [d for d in deployments if d.get('environment')=='production' and d.get('deployment_trigger',{}).get('type')=='github:push' and d.get('latest_stage',{}).get('status') in ('active','idle')]
+              active = [d for d in deployments if d.get('environment')=='production' and d.get('deployment_trigger',{}).get('type')=='github:push' and not d.get('is_skipped', False) and (d.get('latest_stage',{}).get('status')=='active' or (d.get('latest_stage',{}).get('status')=='idle' and d.get('deployment_trigger',{}).get('metadata',{}).get('commit_hash')==os.environ.get('GITHUB_SHA')))]
               if not active:
                   break
               if attempt == 11:
