@@ -15,6 +15,8 @@ spec=importlib.util.spec_from_file_location('uk_content',ROOT/'content/uk_conten
 C=importlib.util.module_from_spec(spec);spec.loader.exec_module(C)
 extra_spec=importlib.util.spec_from_file_location('uk_expansion',ROOT/'content/uk_expansion.py')
 E=importlib.util.module_from_spec(extra_spec);extra_spec.loader.exec_module(E)
+handbook_spec=importlib.util.spec_from_file_location('uk_handbook',ROOT/'content/uk_handbook.py')
+H=importlib.util.module_from_spec(handbook_spec);handbook_spec.loader.exec_module(H)
 for key,data in C.AUDIENCES.items():data['sections']=data['sections']+E.AUDIENCE_EXTRA[key]
 C.GUIDES=[(slug,title,description,sections+E.GUIDE_EXTRA[slug]) for slug,title,description,sections in C.GUIDES]
 LOCATIONS=list(csv.DictReader((ROOT/'content/uk_locations.tsv').open(),delimiter='\t'))
@@ -64,10 +66,71 @@ def chrome():
  footer='<footer class="qh-foot"><div class="qh-foot__in"><div class="qh-foot__grid"><div class="qh-foot-brand"><b>Quran <i>Hub</i></b><p>Live one-to-one online Quran learning for children and adults. UK lesson times are confirmed in GMT or BST.</p>'+link('/contact/','Book a free trial')+'</div><div><h3 class="qh-foot-heading">Courses</h3><ul>'+''.join('<li>'+link(p,t)+'</li>' for p,t in COURSE_LINKS)+'</ul></div><div><h3 class="qh-foot-heading">UK learning</h3><ul>'+''.join('<li>'+link(p,t)+'</li>' for p,t in CORE_LINKS[:5])+'</ul></div><div><h3 class="qh-foot-heading">Quran Hub</h3><ul>'+''.join('<li>'+link(p,t)+'</li>' for p,t in [('/blog/','Learning guides'),('/pricing/','Fees'),('/about/','About'),('/contact/','Contact'),('/privacy-policy/','Privacy'),('/terms-of-service/','Lesson terms')])+'</ul></div></div><div class="qh-foot__bottom"><span>© 2026 Quran Hub. All rights reserved.</span><span>Online lessons • No UK classroom is claimed.</span></div></div></footer>'
  return header,mobile+floating,footer
 
+def handbook_block(topic):
+ title,text=H.HANDBOOK[topic]
+ return '<div class="qhuk-deep-dive"><h3>'+escape(title)+'</h3>'+''.join(para(p) for p in text.split('\n\n'))+'</div>'
+
+def enrich_body(path,body,kind,city):
+ if city:topics=H.LOCATION_TOPICS[city]
+ elif path=='/locations/uk/':topics=['assessment']
+ elif path in [nation_path(n) for n in NATIONS]:topics=H.NATION_TOPICS[next(n for n in NATIONS if nation_path(n)==path)]
+ elif kind=='course':topics=H.COURSE_TOPICS[path.strip('/').split('/')[-1]]
+ elif kind=='article':topics=H.GUIDE_TOPICS[path.strip('/').split('/')[-1]]
+ elif path in H.UTILITY_TOPICS:topics=H.UTILITY_TOPICS[path]
+ else:topics=H.AUDIENCE_TOPICS[next(key for key,p in {'kids':'/online-quran-classes-for-kids-uk/','adults':'/online-quran-classes-for-adults-uk/','beginners':'/online-quran-classes-for-beginners-uk/','female-teachers':'/female-quran-teachers-uk/'}.items() if path==p)]
+ # Extend existing sections; H1/H2 strings and their order are never rewritten.
+ sections=list(re.finditer(r'(<section\b[^>]*><h2>(.*?)</h2>)(.*?)(</section>)',body,re.S))
+ if not sections:raise ValueError('No existing section to expand: '+path)
+ preferred={
+ 'assessment':['starting','begin','plan','level','point'],
+ 'letters':['noorani','beginner','letters','starting'],
+ 'independence':['reading','starting','course'],
+ 'pronunciation':['tajweed','pronunciation','correction','recitation'],
+ 'feedback':['feedback','trial','mistake','practic'],
+ 'parents':['parent','child','kids','family'],
+ 'adults':['adult','starting','learner'],
+ 'family':['sibling','family','kids','child'],
+ 'routine':['routine','times','planning','schedule','work'],
+ 'practice':['practi','next step','routine'],
+ 'progress':['progress','review','next step','practi'],
+ 'transfer':['previous','return','book','starting'],
+ 'revision':['revision','hifz','memor','practi'],
+ 'understanding':['understanding','tafseer','course'],
+ 'vocabulary':['arabic','vocabulary','course'],
+ 'remote':['setup','format','online','home'],
+ 'clock':['times','clock','gmt','planning'],
+ 'enrolment':['trial','payment','plan','fee'],
+ 'choice':['teacher','choos','qualifications','trial'],
+ 'safeguarding':['parent','communication','teacher'],
+ 'format':['format','online','trial'],
+ 'workload':['work','school','routine','frequency'],
+ 'notes':['notes','practi','progress','question'],
+ 'pathways':['course','path','starting'],
+ 'fees':['fee','prices','payment'],
+ 'privacy_enquiry':['enquiries'],
+ 'privacy_message':['enquiries'],
+ 'privacy_child':['enquiries'],
+ 'privacy_external':['hosting'],
+ 'privacy_questions':['questions'],
+ 'agreement':['arrangements','terms','availability'],
+ }
+ additions={i:[] for i in range(len(sections))}
+ for topic in topics:
+  selected=0
+  for term in preferred.get(topic,[]):
+   candidates=[i for i,m in enumerate(sections) if term in unescape(re.sub('<[^>]+>',' ',m[2])).lower()]
+   if candidates:selected=candidates[0];break
+  additions[selected].append(handbook_block(topic))
+ for i in reversed(range(len(sections))):
+  m=sections[i]
+  if additions[i]:body=body[:m.end(3)]+''.join(additions[i])+body[m.end(3):]
+ return body
+
 PAGE_REGISTRY=[]
 def write_page(path,title,description,lead,body,crumbs,faq=None,kind='service',city=None,hero_image=None):
  if not path.startswith('/') or not path.endswith('/'):raise ValueError(path)
  faq=faq or []
+ body=enrich_body(path,body,kind,city)
  canonical=ORIGIN+path
  graph=[{'@type':'EducationalOrganization','@id':ORIGIN+'/#academy','name':'Quran Hub','url':ORIGIN+'/','email':'info@quranlyhub.com','telephone':'+923439486140','areaServed':{'@type':'Country','name':'United Kingdom'},'contactPoint':{'@type':'ContactPoint','contactType':'course enquiries','telephone':'+923439486140','availableLanguage':['English','Arabic','Urdu']}},{'@type':'WebPage','@id':canonical+'#webpage','url':canonical,'name':title,'description':description,'inLanguage':'en-GB','isPartOf':{'@type':'WebSite','@id':ORIGIN+'/#website','url':ORIGIN+'/','name':'Quran Hub'}},{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':i+1,'name':name,'item':ORIGIN+p} for i,(p,name) in enumerate(crumbs)]}]
  if kind=='service':graph.append({'@type':'Service','@id':canonical+'#service','name':title,'description':description,'serviceType':'Live online Quran tuition','provider':{'@id':ORIGIN+'/#academy'},'areaServed':{'@type':'Place','name':city,'containedInPlace':{'@type':'Country','name':'United Kingdom'}} if city else {'@type':'Country','name':'United Kingdom'},'availableChannel':{'@type':'ServiceChannel','serviceUrl':canonical}})
@@ -211,6 +274,8 @@ def rewrite_home():
  home,n=re.subn(r'<header\b[^>]*class="qh-head".*?</footer>',lambda _:head+mobile+discovery+foot,home,flags=re.S)
  if n!=1:raise ValueError('Expected one homepage header-to-footer navigation region')
  if '<link rel="stylesheet" href="/uk.css">' not in home:home=home.replace('</head>','<link rel="stylesheet" href="/uk.css"><script src="/uk.js" defer></script></head>')
+ home=re.sub(r'<section id="qhuk-home-depth".*?</section>','',home,flags=re.S)
+ home=home.replace('</main>','<section id="qhuk-home-depth" class="qhuk-wrap">'+handbook_block('assessment')+handbook_block('practice')+'</section></main>')
  p.write_text(home)
 
 def write_sitemap():

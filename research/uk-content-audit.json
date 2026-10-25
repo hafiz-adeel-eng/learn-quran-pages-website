@@ -1,6 +1,9 @@
 {
+  "word_minimum": 1500,
+  "minimum_main_content_words": 1517,
+  "unchanged_heading_pages": 112,
   "word_limit": 2000,
-  "maximum_main_content_words": 1407,
+  "maximum_main_content_words": 1796,
   "pages": 112,
   "coverage_by_nation": {
     "England": 62,
@@ -42,7 +45,7 @@
         "Dunfermline"
       ]
     ],
-    "note": "This tests authored blocks. Shared navigation, accurate fees, national clock guidance and focus-group instructions intentionally repeat."
+    "note": "This tests authored blocks. Shared navigation, factual service details and selected teaching-reference passages intentionally repeat. This statistic is for authored city blocks, not whole-page duplication."
   },
   "schema_counts": {
     "EducationalOrganization": 111,

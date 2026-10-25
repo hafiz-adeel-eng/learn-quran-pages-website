@@ -5,6 +5,20 @@ from pathlib import Path
 import json, re, time, urllib.request, urllib.parse, xml.etree.ElementTree as ET
 ORIGIN='https://learnquran-86k.pages.dev';PUBLIC=Path(__file__).resolve().parents[1]/'public'
 NS='{http://www.sitemaps.org/schemas/sitemap/0.9}'
+BASELINES=json.loads((PUBLIC.parent/'content/heading-baseline.json').read_text())
+class Outline(HTMLParser):
+ def __init__(self):super().__init__();self.main=False;self.skip=0;self.text=[];self.heading=None;self.parts=[];self.headings=[]
+ def handle_starttag(self,t,a):
+  if t=='main':self.main=True
+  if self.main and t in ('aside','script','style'):self.skip+=1
+  if t in ('h1','h2'):self.heading=t;self.parts=[]
+ def handle_data(self,s):
+  if self.main and not self.skip:self.text.append(s)
+  if self.heading:self.parts.append(s)
+ def handle_endtag(self,t):
+  if t==self.heading:self.headings.append([t,' '.join(''.join(self.parts).split())]);self.heading=None
+  if self.main and t in ('aside','script','style'):self.skip-=1
+  if t=='main':self.main=False
 def fetch(url):
  for attempt in range(4):
   try:
@@ -21,7 +35,11 @@ def check(url):
  for attempt in range(4):
   status,final,headers,body=fetch(url);text=body.decode('utf-8-sig')
   valid=status==200 and final.rstrip('/')==url.rstrip('/') and canonical(text)==url and len(re.findall(r'<h1\b',text,re.I))==1 and not re.search(r'<meta[^>]+content=["\x27][^"\x27]*noindex',text,re.I)
-  if valid:return url
+  outline=Outline();outline.feed(text)
+  count=len(re.findall(r"\b[\w]+(?:[’'-][\w]+)*\b",' '.join(outline.text)))
+  path=urllib.parse.urlparse(url).path
+  valid=valid and 1500<=count<=2000 and outline.headings==BASELINES[path]
+  if valid:return {'url':url,'words':count}
   if attempt<3:time.sleep(3)
  raise AssertionError('Page response/canonical check failed: '+url)
 expected={x.text for x in ET.parse(PUBLIC/'sitemap.xml').getroot().iter(NS+'loc')}
@@ -35,4 +53,4 @@ assert b'Allow: /' in fetch(ORIGIN+'/robots.txt')[3]
 assert fetch(ORIGIN+'/google0857ee4d7c225a56.html')[3].strip()==b'google-site-verification: google0857ee4d7c225a56.html'
 for asset in ['/uk.css','/uk.js','/styles.css','/original-interactions.js','/interactions.js']:
  assert fetch(ORIGIN+asset)[0]==200,asset
-print(json.dumps({'live_checked_pages':len(checked),'sitemap':'valid','verification_file':'present','assets':'available','note':'Public HTTP checks do not establish Google indexing or screenshot equivalence.'}))
+print(json.dumps({'live_checked_pages':len(checked),'minimum_words':min(p['words'] for p in checked),'maximum_words':max(p['words'] for p in checked),'unchanged_h1_h2_pages':len(checked),'sitemap':'valid','verification_file':'present','assets':'available','note':'Public HTTP checks do not establish Google indexing or screenshot equivalence.'}))

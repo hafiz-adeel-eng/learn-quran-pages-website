@@ -8,3 +8,5 @@
 /* Use the same original course artwork as the homepage. */
 .qhuk-cards article>a.qhuk-course-image{display:block;margin:-22px -22px 20px;overflow:hidden;border-radius:13px 13px 0 0}.qhuk-course-image img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;transition:transform .25s ease}.qhuk-course-image:hover img{transform:scale(1.025)}.qhuk-hero-image.qhuk-course-hero-image img{aspect-ratio:auto;object-fit:contain}.qhuk-page .qhuk-course-hero-image{display:block}
 @media(prefers-reduced-motion:reduce){.qhuk-course-image img{transition:none}.qhuk-course-image:hover img{transform:none}}
+
+.qhuk-deep-dive{margin-top:24px}.qhuk-deep-dive h3{margin-bottom:14px;font-size:1.12rem;line-height:1.45;color:#173b35}#qhuk-home-depth{padding-block:24px 48px;font-family:Inter,Arial,sans-serif;line-height:1.75}#qhuk-home-depth p{margin-bottom:18px}
