@@ -1,0 +1,125 @@
+name: Diagnose Quran Hub indexing access
+
+on:
+  push:
+    paths: ['.github/workflows/check-indexing.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    environment: learn quran
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read Cloudflare project and public crawler responses
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: python
+        run: |
+          import concurrent.futures, json, os, re, socket, urllib.request, urllib.error, urllib.parse, urllib.robotparser, xml.etree.ElementTree as ET
+          from html.parser import HTMLParser
+          origin = 'https://learnquran-86k.pages.dev'
+          host = urllib.parse.urlparse(origin).hostname
+          agents = {
+              'browser': 'Mozilla/5.0 (compatible; QuranHub-read-only-diagnostic/1.0)',
+              'Googlebot-user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+              'Google-InspectionTool-user-agent': 'Mozilla/5.0 (compatible; Google-InspectionTool/1.0;)'
+          }
+          paths = ['/robots.txt', '/sitemap.xml', '/', '/locations/uk/london/', '/courses/noorani-qaida/']
+          class Meta(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.robots = []; self.canonicals = []
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if tag == 'meta' and a.get('name', '').lower() in ('robots', 'googlebot', 'googlebot-news'):
+                      self.robots.append({'name': a.get('name'), 'content': a.get('content', '')})
+                  if tag == 'link' and a.get('rel', '').lower() == 'canonical':
+                      self.canonicals.append(a.get('href'))
+          failures = []
+          def fetch(url, agent=None, headers=None):
+              req = urllib.request.Request(url, headers=headers or {'User-Agent': agent or agents['browser']})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as response:
+                      return response.status, response.url, response.headers, response.read()
+              except urllib.error.HTTPError as error:
+                  return error.code, error.url, error.headers, error.read()
+          def check(item):
+              label, agent, path = item
+              info = {'agent': label, 'path': path}
+              try:
+                  status, final, headers, body = fetch(origin + path, agent)
+                  info.update({'status': status, 'final_url': final, 'bytes': len(body)})
+                  for key in ['Content-Type', 'X-Robots-Tag', 'CF-Mitigated', 'CF-Cache-Status', 'Cache-Control', 'Server', 'Location']:
+                      info[key.lower()] = headers.get(key)
+                  if status != 200 or final.rstrip('/') != (origin + path).rstrip('/'):
+                      failures.append(label + ' ' + path + ': unexpected HTTP response/redirect')
+                  if headers.get('CF-Mitigated'):
+                      failures.append(label + ' ' + path + ': Cloudflare mitigation header')
+                  text = body.decode('utf-8-sig')
+                  if path == '/robots.txt':
+                      rp = urllib.robotparser.RobotFileParser(); rp.parse(text.splitlines())
+                      info['robots_text'] = text
+                      info['googlebot_allowed'] = {p: rp.can_fetch('Googlebot', origin + p) for p in paths}
+                      info['inspection_allowed'] = {p: rp.can_fetch('Google-InspectionTool', origin + p) for p in paths}
+                      if not all(info['googlebot_allowed'].values()) or not all(info['inspection_allowed'].values()):
+                          failures.append(label + ': robots disallows a checked URL')
+                  elif path == '/sitemap.xml':
+                      root = ET.fromstring(body)
+                      urls = [n.text for n in root.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+                      info['xml_root'] = root.tag; info['url_count'] = len(urls)
+                      info['unique_urls'] = len(set(urls)); info['homepage_listed'] = origin + '/' in urls
+                      info['other_hosts'] = sorted({urllib.parse.urlparse(u).netloc for u in urls if urllib.parse.urlparse(u).netloc != host})
+                      if len(urls) != 112 or len(set(urls)) != 112 or info['other_hosts'] or not info['homepage_listed']:
+                          failures.append(label + ': sitemap URL validation failed')
+                  else:
+                      page = Meta(); page.feed(text)
+                      info['robots_meta'] = page.robots; info['canonical'] = page.canonicals
+                      blocked = any(re.search(r'\b(noindex|none)\b', m['content'], re.I) for m in page.robots)
+                      blocked = blocked or bool(re.search(r'\b(noindex|none)\b', headers.get('X-Robots-Tag', ''), re.I))
+                      if blocked or page.canonicals != [origin + path]:
+                          failures.append(label + ' ' + path + ': indexing tag/canonical issue')
+              except Exception as error:
+                  info['error'] = str(error); failures.append(label + ' ' + path + ': ' + type(error).__name__)
+              return info
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+              for info in pool.map(check, [(label, agent, path) for label, agent in agents.items() for path in paths]):
+                  print(json.dumps(info))
+          families = {i[0] for i in socket.getaddrinfo(host, 443)}
+          print(json.dumps({'dns_a': socket.AF_INET in families, 'dns_aaaa': socket.AF_INET6 in families, 'https_certificate_validation': 'enabled by urllib default TLS context'}))
+          token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
+          account = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
+          if token and account:
+              base = 'https://api.cloudflare.com/client/v4/accounts/' + account
+              auth = {'Authorization': 'Bearer ' + token, 'Accept': 'application/json'}
+              status, _, _, body = fetch(base + '/pages/projects/learnquran', headers=auth)
+              if status == 200:
+                  project = json.loads(body)['result']
+                  deployment = project.get('canonical_deployment') or {}
+                  print(json.dumps({'cloudflare_project': project.get('name'), 'subdomain': project.get('subdomain'), 'domains': project.get('domains'), 'production_branch': project.get('production_branch'), 'production_environment': deployment.get('environment'), 'production_deployment_status': deployment.get('latest_stage', {}).get('status'), 'production_aliases': deployment.get('aliases')}))
+                  version_url = deployment.get('url')
+                  if version_url:
+                      v_status, _, v_headers, _ = fetch(version_url + '/')
+                      print(json.dumps({'versioned_deployment_host': urllib.parse.urlparse(version_url).hostname, 'status': v_status, 'x_robots_tag': v_headers.get('X-Robots-Tag'), 'note': 'Check production alias above for indexing; versioned/preview hosts may intentionally carry noindex.'}))
+              else:
+                  print(json.dumps({'cloudflare_project_inspection_status': status}))
+              access_url = base + '/access/apps?per_page=100'
+              status, _, _, body = fetch(access_url, headers=auth)
+              if status == 200:
+                  data = json.loads(body); matches = []
+                  for app in data.get('result', []):
+                      domains = [app.get('domain', '')] + app.get('self_hosted_domains', [])
+                      if any(host == d or (d.startswith('*.') and host.endswith(d[1:])) for d in domains):
+                          matches.append({'type': app.get('type'), 'domain': app.get('domain')})
+                  print(json.dumps({'cloudflare_access_matching_apps': matches, 'page_count': data.get('result_info', {}).get('total_pages', 1), 'scope': 'first up to 100 account Access applications; other application details are not printed'}))
+              else:
+                  print(json.dumps({'cloudflare_access_inspection_status': status, 'note': 'Current token cannot inspect Access settings. Public challenge/login checks are separate.'}))
+          else:
+              print(json.dumps({'private_cloudflare_check': 'credentials unavailable; public checks completed'}))
+          print(json.dumps({'failures': failures, 'limit': 'User-agent tests originate from GitHub, not verified Google crawler IPs. Private WAF/bot rules and Search Console fetch logs are not established by public HTTP tests.'}))
+          if failures:
+              raise SystemExit('PUBLIC_INDEXING_CHECK_FAILED')
+          print('PUBLIC_INDEXING_CHECK_PASSED')
