@@ -63,7 +63,7 @@ for label,agent in [('browser','Mozilla/5.0'),('googlebot-user-agent','Googlebot
 print(json.dumps({'sitemap_index':'valid','index_entry':ORIGIN+'/sitemap-index.xml','browser_and_googlebot_user_agent':'HTTP 200','note':'This does not establish a request from actual Google crawler IPs.'}))
 assert fetch(ORIGIN+'/google0857ee4d7c225a56.html')[3].strip()==b'google-site-verification: google0857ee4d7c225a56.html'
 try:
- with urllib.request.urlopen(ORIGIN+'/__qh_missing_page_index_test__/',timeout=30) as response:
+ with urllib.request.urlopen(urllib.request.Request(ORIGIN+'/quran-hub-route-check-not-found/',headers={'User-Agent':'QuranHub-Deployment-Check/1.0'}),timeout=30) as response:
   raise AssertionError('Missing route returned HTTP '+str(response.status)+' instead of 404')
 except urllib.error.HTTPError as error:
  assert error.code==404,error.code
