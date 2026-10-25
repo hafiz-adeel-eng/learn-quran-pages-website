@@ -29,7 +29,7 @@ jobs:
               'Googlebot-user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
               'Google-InspectionTool-user-agent': 'Mozilla/5.0 (compatible; Google-InspectionTool/1.0;)'
           }
-          paths = ['/robots.txt', '/sitemap.xml', '/', '/locations/uk/london/', '/courses/noorani-qaida/']
+          paths = ['/robots.txt', '/sitemap.xml', '/sitemap-index.xml', '/', '/locations/uk/london/', '/courses/noorani-qaida/']
           class Meta(HTMLParser):
               def __init__(self):
                   super().__init__(); self.robots = []; self.canonicals = []
@@ -75,6 +75,12 @@ jobs:
                       info['other_hosts'] = sorted({urllib.parse.urlparse(u).netloc for u in urls if urllib.parse.urlparse(u).netloc != host})
                       if len(urls) != 112 or len(set(urls)) != 112 or info['other_hosts'] or not info['homepage_listed']:
                           failures.append(label + ': sitemap URL validation failed')
+                  elif path == '/sitemap-index.xml':
+                      root = ET.fromstring(body)
+                      children = [n.text for n in root.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+                      info['xml_root'] = root.tag; info['child_sitemaps'] = children
+                      if root.tag != '{http://www.sitemaps.org/schemas/sitemap/0.9}sitemapindex' or children != [origin + '/sitemap.xml']:
+                          failures.append(label + ': sitemap index validation failed')
                   else:
                       page = Meta(); page.feed(text)
                       info['robots_meta'] = page.robots; info['canonical'] = page.canonicals
@@ -106,17 +112,49 @@ jobs:
                       print(json.dumps({'versioned_deployment_host': urllib.parse.urlparse(version_url).hostname, 'status': v_status, 'x_robots_tag': v_headers.get('X-Robots-Tag'), 'note': 'Check production alias above for indexing; versioned/preview hosts may intentionally carry noindex.'}))
               else:
                   print(json.dumps({'cloudflare_project_inspection_status': status}))
-              access_url = base + '/access/apps?per_page=100'
-              status, _, _, body = fetch(access_url, headers=auth)
-              if status == 200:
-                  data = json.loads(body); matches = []
-                  for app in data.get('result', []):
-                      domains = [app.get('domain', '')] + app.get('self_hosted_domains', [])
-                      if any(host == d or (d.startswith('*.') and host.endswith(d[1:])) for d in domains):
-                          matches.append({'type': app.get('type'), 'domain': app.get('domain')})
-                  print(json.dumps({'cloudflare_access_matching_apps': matches, 'page_count': data.get('result_info', {}).get('total_pages', 1), 'scope': 'first up to 100 account Access applications; other application details are not printed'}))
-              else:
-                  print(json.dumps({'cloudflare_access_inspection_status': status, 'note': 'Current token cannot inspect Access settings. Public challenge/login checks are separate.'}))
+              access_results = []; access_status = None; scanned = 0
+              def hostname_and_path(value):
+                  if isinstance(value, dict):
+                      value = value.get('uri') or value.get('hostname') or value.get('domain') or ''
+                  value = str(value).strip()
+                  parsed = urllib.parse.urlparse(value if '://' in value else '//' + value)
+                  return (parsed.hostname or '').lower().rstrip('.'), parsed.path or '/'
+              def covers(pattern, hostname):
+                  return pattern == hostname or (pattern.startswith('*.') and hostname.endswith(pattern[1:]))
+              page_number = 1
+              while True:
+                  status, _, _, body = fetch(base + '/access/apps?per_page=100&page=' + str(page_number), headers=auth)
+                  access_status = status
+                  if status != 200:
+                      print(json.dumps({'cloudflare_access_inspection_status': status, 'note': 'Access application inspection unavailable for current token.'}))
+                      break
+                  data = json.loads(body)
+                  if not data.get('success', True):
+                      print(json.dumps({'cloudflare_access_inspection_status': 'API returned success=false'}))
+                      break
+                  apps = data.get('result') or []
+                  scanned += len(apps)
+                  for app in apps:
+                      values = [app.get('domain', '')] + (app.get('self_hosted_domains') or []) + (app.get('destinations') or [])
+                      patterns = sorted(set(hostname_and_path(v) for v in values if v))
+                      production = [{'hostname': h, 'path': p} for h,p in patterns if covers(h,host)]
+                      related = [{'hostname': h, 'path': p} for h,p in patterns if h == host or h.endswith('.'+host)]
+                      if not production and not related:
+                          continue
+                      record = {'application_id': app.get('id'), 'application_type': app.get('type'), 'production_matches': production, 'project_hostnames': related}
+                      policy_status, _, _, policy_body = fetch(base + '/access/apps/' + app['id'] + '/policies', headers=auth)
+                      record['policies_status'] = policy_status
+                      if policy_status == 200:
+                          policies = json.loads(policy_body).get('result') or []
+                          record['policies'] = [{'decision': p.get('decision'), 'precedence': p.get('precedence'), 'include_selectors': sorted({k for rule in p.get('include', []) for k in rule}), 'exclude_selectors': sorted({k for rule in p.get('exclude', []) for k in rule}), 'require_selectors': sorted({k for rule in p.get('require', []) for k in rule})} for p in policies]
+                      access_results.append(record)
+                  total_pages = data.get('result_info', {}).get('total_pages')
+                  if (total_pages and page_number >= total_pages) or len(apps) < 100:
+                      break
+                  page_number += 1
+                  if page_number > 100:
+                      raise SystemExit('Pagination safety limit reached; inspection incomplete')
+              print(json.dumps({'cloudflare_access_inspection_status': access_status, 'applications_scanned': scanned, 'project_related_applications': access_results, 'production_matching_applications': sum(bool(a['production_matches']) for a in access_results), 'other_application_details': 'not printed', 'scope': 'all paginated account Access apps; production host and preview hostnames distinguished; no configuration changes performed'}))
           else:
               print(json.dumps({'private_cloudflare_check': 'credentials unavailable; public checks completed'}))
           print(json.dumps({'failures': failures, 'limit': 'User-agent tests originate from GitHub, not verified Google crawler IPs. Private WAF/bot rules and Search Console fetch logs are not established by public HTTP tests.'}))
