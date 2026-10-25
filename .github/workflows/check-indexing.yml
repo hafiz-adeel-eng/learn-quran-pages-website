@@ -105,6 +105,19 @@ jobs:
               if status == 200:
                   project = json.loads(body)['result']
                   deployment = project.get('canonical_deployment') or {}
+                  source = project.get('source') or {}
+                  source_config = source.get('config') or {}
+                  build = project.get('build_config') or {}
+                  print(json.dumps({'pages_build': {k: build.get(k) for k in ['build_command','destination_dir','root_dir']}, 'source_type': source.get('type'), 'source_repository': source_config.get('repo_name'), 'native_production_deployments_enabled': source_config.get('production_deployments_enabled'), 'canonical_commit': deployment.get('deployment_trigger', {}).get('metadata', {}).get('commit_hash'), 'canonical_deployment_id': deployment.get('id')}))
+                  for checked_path in ['/', '/locations/uk/london/', '/courses/noorani-qaida/']:
+                      probe_url = origin + checked_path + '?qh_index_probe=' + os.environ.get('GITHUB_RUN_ID','check')
+                      p_status,p_final,p_headers,p_body = fetch(probe_url,headers={'User-Agent':agents['Googlebot-user-agent'],'Cache-Control':'no-cache'})
+                      print(json.dumps({'cache_probe_path':checked_path,'status':p_status,'bytes':len(p_body),'x_robots_tag':p_headers.get('X-Robots-Tag'),'cache_control':p_headers.get('Cache-Control'),'cf_cache_status':p_headers.get('CF-Cache-Status'),'age':p_headers.get('Age')}))
+                  d_status,_,_,d_body=fetch(base + '/pages/projects/learnquran/deployments?per_page=5',headers=auth)
+                  if d_status==200:
+                      deployments=json.loads(d_body).get('result') or []
+                      print(json.dumps({'recent_deployments':[{'environment':d.get('environment'),'created_on':d.get('created_on'),'status':d.get('latest_stage',{}).get('status'),'commit':d.get('deployment_trigger',{}).get('metadata',{}).get('commit_hash'),'trigger':d.get('deployment_trigger',{}).get('type')} for d in deployments[:5]]}))
+
                   print(json.dumps({'cloudflare_project': project.get('name'), 'subdomain': project.get('subdomain'), 'domains': project.get('domains'), 'production_branch': project.get('production_branch'), 'production_environment': deployment.get('environment'), 'production_deployment_status': deployment.get('latest_stage', {}).get('status'), 'production_aliases': deployment.get('aliases')}))
                   version_url = deployment.get('url')
                   if version_url:
