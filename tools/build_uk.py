@@ -285,7 +285,11 @@ def write_sitemap():
  for path in sorted(paths):ET.SubElement(ET.SubElement(root,'url'),'loc').text=ORIGIN+path
  ET.indent(root,space='  ')
  (PUBLIC/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n'+ET.tostring(root,encoding='unicode')+'\n')
- (PUBLIC/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+ORIGIN+'/sitemap.xml\n')
+ index=ET.Element('sitemapindex',xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
+ ET.SubElement(ET.SubElement(index,'sitemap'),'loc').text=ORIGIN+'/sitemap.xml'
+ ET.indent(index,space='  ')
+ (PUBLIC/'sitemap-index.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n'+ET.tostring(index,encoding='unicode')+'\n')
+ (PUBLIC/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+ORIGIN+'/sitemap-index.xml\n')
  redirects=[]
  for c in C.COURSES:redirects.append('/services/'+c['slug']+'/ /courses/'+c['slug']+'/ 301')
  for row in LOCATIONS:redirects.append('/online-quran-classes-'+slug(row['name'])+'/ '+loc_path(row)+' 301')

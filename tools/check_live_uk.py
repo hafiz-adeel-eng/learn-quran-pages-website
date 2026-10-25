@@ -49,7 +49,17 @@ for attempt in range(4):
  time.sleep(3)
 assert actual==expected,('Sitemap mismatch',len(actual),len(expected))
 with ThreadPoolExecutor(max_workers=6) as pool:checked=list(pool.map(check,sorted(expected)))
-assert b'Allow: /' in fetch(ORIGIN+'/robots.txt')[3]
+robots=fetch(ORIGIN+'/robots.txt')[3]
+assert b'Allow: /' in robots and (ORIGIN+'/sitemap-index.xml').encode() in robots
+for label,agent in [('browser','Mozilla/5.0'),('googlebot-user-agent','Googlebot/2.1 (+http://www.google.com/bot.html)')]:
+ req=urllib.request.Request(ORIGIN+'/sitemap-index.xml',headers={'User-Agent':agent})
+ with urllib.request.urlopen(req,timeout=30) as response:
+  assert response.status==200 and response.url==ORIGIN+'/sitemap-index.xml'
+  assert 'xml' in response.headers.get('Content-Type','')
+  index=ET.fromstring(response.read())
+  assert index.tag==NS+'sitemapindex'
+  assert [x.text for x in index.iter(NS+'loc')]==[ORIGIN+'/sitemap.xml']
+print(json.dumps({'sitemap_index':'valid','index_entry':ORIGIN+'/sitemap-index.xml','browser_and_googlebot_user_agent':'HTTP 200','note':'This does not establish a request from actual Google crawler IPs.'}))
 assert fetch(ORIGIN+'/google0857ee4d7c225a56.html')[3].strip()==b'google-site-verification: google0857ee4d7c225a56.html'
 for asset in ['/uk.css','/uk.js','/styles.css','/original-interactions.js','/interactions.js']:
  assert fetch(ORIGIN+asset)[0]==200,asset
