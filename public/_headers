@@ -12,3 +12,72 @@
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
   X-Content-Type-Options: nosniff
+
+# Only the production host is indexable; preview defaults are preserved.
+https://learnquran-86k.pages.dev/*
+  ! X-Robots-Tag
+
+https://learnquran-86k.pages.dev/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/locations/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/courses/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/blog/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/online-quran-classes-for-kids-uk/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/online-quran-classes-for-adults-uk/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/online-quran-classes-for-beginners-uk/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/female-quran-teachers-uk/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/pricing/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/about/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/contact/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/privacy-policy/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+https://learnquran-86k.pages.dev/terms-of-service/
+  Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: no-store
+  CDN-Cache-Control: no-store

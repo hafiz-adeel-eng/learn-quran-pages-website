@@ -2,7 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from html.parser import HTMLParser
 from pathlib import Path
-import json, re, time, urllib.request, urllib.parse, xml.etree.ElementTree as ET
+import json, re, time, urllib.request, urllib.error, urllib.parse, xml.etree.ElementTree as ET
 ORIGIN='https://learnquran-86k.pages.dev';PUBLIC=Path(__file__).resolve().parents[1]/'public'
 NS='{http://www.sitemaps.org/schemas/sitemap/0.9}'
 BASELINES=json.loads((PUBLIC.parent/'content/heading-baseline.json').read_text())
@@ -35,6 +35,7 @@ def check(url):
  for attempt in range(4):
   status,final,headers,body=fetch(url);text=body.decode('utf-8-sig')
   valid=status==200 and final.rstrip('/')==url.rstrip('/') and canonical(text)==url and len(re.findall(r'<h1\b',text,re.I))==1 and not re.search(r'<meta[^>]+content=["\x27][^"\x27]*noindex',text,re.I)
+  valid=valid and not re.search(r'\b(noindex|none)\b',headers.get('X-Robots-Tag',''),re.I) and '<!-- Quran Hub production release: indexing-repair-2026-10-25 -->' in text
   outline=Outline();outline.feed(text)
   count=len(re.findall(r"\b[\w]+(?:[’'-][\w]+)*\b",' '.join(outline.text)))
   path=urllib.parse.urlparse(url).path
@@ -61,6 +62,11 @@ for label,agent in [('browser','Mozilla/5.0'),('googlebot-user-agent','Googlebot
   assert [x.text for x in index.iter(NS+'loc')]==[ORIGIN+'/sitemap.xml']
 print(json.dumps({'sitemap_index':'valid','index_entry':ORIGIN+'/sitemap-index.xml','browser_and_googlebot_user_agent':'HTTP 200','note':'This does not establish a request from actual Google crawler IPs.'}))
 assert fetch(ORIGIN+'/google0857ee4d7c225a56.html')[3].strip()==b'google-site-verification: google0857ee4d7c225a56.html'
+try:
+ with urllib.request.urlopen(ORIGIN+'/__qh_missing_page_index_test__/',timeout=30) as response:
+  raise AssertionError('Missing route returned HTTP '+str(response.status)+' instead of 404')
+except urllib.error.HTTPError as error:
+ assert error.code==404,error.code
 for asset in ['/uk.css','/uk.js','/styles.css','/original-interactions.js','/interactions.js']:
  assert fetch(ORIGIN+asset)[0]==200,asset
-print(json.dumps({'live_checked_pages':len(checked),'minimum_words':min(p['words'] for p in checked),'maximum_words':max(p['words'] for p in checked),'unchanged_h1_h2_pages':len(checked),'sitemap':'valid','verification_file':'present','assets':'available','note':'Public HTTP checks do not establish Google indexing or screenshot equivalence.'}))
+print(json.dumps({'live_checked_pages':len(checked),'minimum_words':min(p['words'] for p in checked),'maximum_words':max(p['words'] for p in checked),'unchanged_h1_h2_pages':len(checked),'production_noindex_headers':0,'release_marker':'current','sitemap':'valid','verification_file':'present','assets':'available','note':'Public HTTP checks do not establish Google indexing or screenshot equivalence.'}))

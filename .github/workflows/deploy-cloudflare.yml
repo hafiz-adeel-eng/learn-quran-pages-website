@@ -39,7 +39,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: python
         run: |
-          import json, os, re, urllib.request, urllib.error
+          import json, os, re, time, urllib.request, urllib.error
           token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
           account = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
           if not token or not account:
@@ -62,7 +62,33 @@ jobs:
               if error.code != 404:
                   raise SystemExit('Cloudflare account access failed (HTTP ' + str(error.code) + '). Check the Account ID and Pages Edit token permission.')
               project = request(base, 'POST', {'name': 'learnquran', 'production_branch': 'main'})
-          print('Cloudflare Pages project ready: ' + project['result']['name'])
+          current = project['result']
+          source = current.get('source') or {}
+          config = source.get('config') or {}
+          changes = {'build_config': {'build_command': 'python tools/build_uk.py && python tools/audit_uk.py', 'destination_dir': 'public', 'root_dir': ''}}
+          if source.get('type') == 'github':
+              if config.get('repo_name') != 'learn-quran-pages-website':
+                  raise SystemExit('Unexpected source repository; refusing to change deployment settings.')
+              config = dict(config)
+              config['production_deployments_enabled'] = False
+              changes['source'] = {'type': 'github', 'config': config}
+          project = request(base + '/learnquran', 'PATCH', changes)['result']
+          actual_source = project.get('source') or {}
+          if actual_source.get('type') == 'github' and actual_source.get('config', {}).get('production_deployments_enabled') is not False:
+              raise SystemExit('Native production auto-deploy was not disabled.')
+          print(json.dumps({'project':project['name'],'production_publisher':'GitHub Actions','native_production_deployments_enabled':actual_source.get('config',{}).get('production_deployments_enabled'),'native_build_command':project.get('build_config',{}).get('build_command'),'native_output_directory':project.get('build_config',{}).get('destination_dir')}))
+          # A push may have started a native build before its switch was disabled.
+          # Let that finite build finish before publishing the authoritative build.
+          for attempt in range(12):
+              deployments = request(base + '/learnquran/deployments?per_page=10')['result']
+              active = [d for d in deployments if d.get('environment')=='production' and d.get('deployment_trigger',{}).get('type')=='github:push' and d.get('latest_stage',{}).get('status') in ('active','idle')]
+              if not active:
+                  break
+              if attempt == 11:
+                  raise SystemExit('A native build is still active; refusing a production deployment race.')
+              print('Waiting for an already-started native build to finish.')
+              time.sleep(5)
+          print('Cloudflare Pages project ready: ' + project['name'])
 
       - name: Deploy website
         uses: cloudflare/wrangler-action@v4

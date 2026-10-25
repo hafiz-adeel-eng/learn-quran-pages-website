@@ -15,3 +15,15 @@ New entry: https://learnquran-86k.pages.dev/sitemap-index.xml
 Child URL set: https://learnquran-86k.pages.dev/sitemap.xml
 
 Do not claim Google verification, sitemap acceptance or indexing success until Search Console reports it. Inspect an actual dated Google fetch and any corresponding Cloudflare security event if the new entry also fails. Avoid disabling protections or moving domains without evidence of a relevant block.
+
+## Follow-up after Access read permission was granted
+
+On 25 October 2026 at approximately 13:38–13:41 Pakistan time, the authenticated Access API succeeded: one application, scoped to `*.learnquran-86k.pages.dev`, with a members-only email allow policy. No Access application matched the bare production hostname.
+
+Fresh diagnostics found a real production indexing blocker on the London and Noorani Qaida URLs: HTTP X-Robots-Tag noindex, CF-Cache-Status HIT, and Cache-Control public, s-maxage=604800. Their HTML still said index/follow. A cache-busting query returned the homepage HTML at those same routes instead of their own pages. This is distinct from the earlier successful public checks and does not prove the precise cause of Google's historical sitemap fetch error.
+
+Cloudflare's authenticated project settings showed a GitHub source with native production deployments enabled, an empty build command and an empty output directory. Recent deployments showed native github:push jobs for the diagnostic commits replacing the earlier ad_hoc deployments made by GitHub Actions. The generator is necessary to create nested routes; publishing source files without running it produces an incomplete deployment with homepage fallback.
+
+Repair: production publishing is consolidated in GitHub Actions. The workflow sets the native production deployment switch to false and configures the correct generator/audit command and public output for any native preview builds. Already-started native production builds must finish before publishing. Static HTML is regenerated with a release marker, production-host headers remove X-Robots-Tag and prevent stale HTML edge caching, and a real 404 document prevents missing routes from silently becoming the homepage. Existing H1/H2 and visible word counts are preserved. The post-deploy check requires all 112 routes to have the current marker, their own canonical and headings, 1500–2000 words and no noindex HTTP header.
+
+Search Console acceptance remains a separate verification requiring Google's actual fetch result. Do not claim the historical GSC report has cleared solely because hosting checks pass.

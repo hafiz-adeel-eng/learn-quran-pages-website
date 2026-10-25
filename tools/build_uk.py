@@ -11,6 +11,7 @@ PUBLIC=ROOT/'public'
 ORIGIN='https://learnquran-86k.pages.dev'
 SOURCE='https://quranlyhub.com'
 PHONE='923439486140'
+RELEASE_MARKER='<!-- Quran Hub production release: indexing-repair-2026-10-25 -->'
 spec=importlib.util.spec_from_file_location('uk_content',ROOT/'content/uk_content.py')
 C=importlib.util.module_from_spec(spec);spec.loader.exec_module(C)
 extra_spec=importlib.util.spec_from_file_location('uk_expansion',ROOT/'content/uk_expansion.py')
@@ -143,7 +144,7 @@ def write_page(path,title,description,lead,body,crumbs,faq=None,kind='service',c
  hero='<section class="qhuk-hero"><div class="qhuk-wrap qhuk-hero-grid"><div>'+trail+'<p class="qhuk-eyebrow">Quran Hub • Live online learning</p><h1>'+escape(title)+'</h1>'+para(lead)+'<div class="qhuk-pills"><span>One-to-one tuition</span><span>UK time: GMT / BST</span><span>Free trial</span></div>'+actions(city or 'UK')+'</div><figure class="qhuk-hero-image'+(' qhuk-course-hero-image' if kind=='course' else '')+'">'+(hero_image or image())+'<figcaption>'+('Course illustration from the Quran Hub course collection.' if kind=='course' else 'Live learning from home; illustrative student image.')+'</figcaption></figure></div></section>'
  aside='<aside class="qhuk-aside"><div class="qhuk-panel"><h2>Find your starting point</h2>'+nav_links(CORE_LINKS,'qhuk-side-link')+'</div><div class="qhuk-panel"><h2>Practical learning guides</h2>'+nav_links(GUIDE_LINKS,'qhuk-side-link')+'</div></aside>'
  html='<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+escape(title)+' | Quran Hub</title><meta name="description" content="'+escape(description,quote=True)+'"><meta name="robots" content="index, follow"><meta name="theme-color" content="#16847A"><link rel="canonical" href="'+canonical+'"><meta property="og:type" content="'+('article' if kind=='article' else 'website')+'"><meta property="og:title" content="'+escape(title,quote=True)+'"><meta property="og:description" content="'+escape(description,quote=True)+'"><meta property="og:url" content="'+canonical+'"><meta property="og:site_name" content="Quran Hub"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/uk.css"><script src="/original-interactions.js" defer></script><script src="/interactions.js" defer></script><script src="/uk.js" defer></script><script type="application/ld+json">'+json.dumps({'@context':'https://schema.org','@graph':graph},ensure_ascii=False).replace('</','<\\/')+'</script></head><body class="page page-id-280 qhuk-page"><a class="qhuk-skip" href="#main">Skip to content</a>'+header+'<main id="main"><div class="elementor-280">'+hero+'<div class="qhuk-wrap qhuk-body"><article class="qhuk-article">'+body+faq_html+'<section class="qhuk-trial"><h2>Discuss a suitable free trial</h2><p>Tell us the learner’s level, preferred UK-time windows and any teacher preference. We will confirm availability and the appropriate course before you choose a plan.</p>'+actions(city or 'UK')+'</section></article>'+aside+'</div></div></main>'+mobile+footer+'</body></html>'
- target=PUBLIC/path.strip('/')/'index.html';target.parent.mkdir(parents=True,exist_ok=True);target.write_text(html)
+ target=PUBLIC/path.strip('/')/'index.html';target.parent.mkdir(parents=True,exist_ok=True);target.write_text(html+'\n'+RELEASE_MARKER+'\n')
  PAGE_REGISTRY.append({'path':path,'title':title,'description':description,'kind':kind,'city':city,'text':unescape(re.sub('<[^>]+>',' ',body))})
 
 def course_list():
@@ -276,7 +277,8 @@ def rewrite_home():
  if '<link rel="stylesheet" href="/uk.css">' not in home:home=home.replace('</head>','<link rel="stylesheet" href="/uk.css"><script src="/uk.js" defer></script></head>')
  home=re.sub(r'<section id="qhuk-home-depth".*?</section>','',home,flags=re.S)
  home=home.replace('</main>','<section id="qhuk-home-depth" class="qhuk-wrap">'+handbook_block('assessment')+handbook_block('practice')+'</section></main>')
- p.write_text(home)
+ home=re.sub(r'<!-- Quran Hub production release:.*?-->\s*','',home)
+ p.write_text(home.rstrip()+'\n'+RELEASE_MARKER+'\n')
 
 def write_sitemap():
  paths=['/']+[p['path'] for p in PAGE_REGISTRY]
